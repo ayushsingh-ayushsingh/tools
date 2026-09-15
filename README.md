@@ -90,4 +90,6 @@ The notebook will be live at `/my-notebook`, with a standalone version at `/note
 
 The build output in `./dist/` is a fully static site — any static host will do. Serve it over HTTP(S); exported notebooks cannot run from `file://` URLs.
 
-Created with care by Ayush Singh.
+> Note, AI was **heavily** used in the making of this project
+
+Created with ❤️ by Ayush Singh

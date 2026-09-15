@@ -1,0 +1,35 @@
+# build output
+dist/
+
+# exported marimo WASM bundles (rebuilt via `pnpm notebooks:export`)
+public/notebooks/*
+!public/notebooks/.gitkeep
+
+# python / marimo
+notebooks/.venv/
+notebooks/src/__pycache__/
+notebooks/src/marimo_nb/__pycache__/
+__pycache__/
+*.pyc
+
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/

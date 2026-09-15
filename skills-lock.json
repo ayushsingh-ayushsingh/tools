@@ -37,6 +37,12 @@
       "skillPath": "skills/jupyter-to-marimo/SKILL.md",
       "computedHash": "f0be092987bf9cdaa254b4fde9b2f54e45026501033bf6214246b2a850a69a86"
     },
+    "kumo-design": {
+      "source": "cloudflare/kumo",
+      "sourceType": "github",
+      "skillPath": "skills/kumo-design/SKILL.md",
+      "computedHash": "43d7a6e2ed67d348c15365ce136630fb62e7a68ecad88eae6100d35cfa289814"
+    },
     "marimo-batch": {
       "source": "marimo-team/skills",
       "sourceType": "github",

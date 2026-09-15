@@ -1,0 +1,13 @@
+---
+interface Props {
+    pad?: boolean;
+}
+
+const { pad = true } = Astro.props;
+---
+
+<div class="overflow-hidden rounded-xl border border-kumo-hairline border-dashed hover:border-double bg-kumo-canvas shadow-kumo-card">
+    <div class:list={[{ "px-5 py-4": pad }]}>
+        <slot />
+    </div>
+</div>

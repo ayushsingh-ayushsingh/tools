@@ -5,7 +5,7 @@ This folder holds the marimo notebook sources for the site. The Astro applicatio
 ## Where things belong
 
 - **Create every new notebook in `src/`.** For example, `src/my-notebook.py`. Files created in the `notebooks/` root are invisible to the site tooling and will never be published.
-- **Never write export output by hand.** Bundles are generated into `public/notebooks/<slug>/` via `pnpm notebooks:export`. Never export into `src/pages/` — that folder holds Astro routes only.
+- **Never write export output by hand.** Notebooks ship as raw marimo bundles at `public/<slug>/index.html` (view-only) and `public/<slug>/edit/index.html` (editable, shares `../assets/`) via `pnpm notebooks:export`. There are no wrapper pages and no `/notebooks/*` route. The export's only delta from pristine marimo output is the `data-notebook-theme` dark-mode payload.
 - **Shared helpers** go in `src/` with an underscore prefix (for example, `src/_utils.py`) so discovery skips them. The launcher package in `src/marimo_nb/` discovers notebooks automatically; do not hard-code notebook names there.
 
 ## Skills to consult
@@ -21,7 +21,7 @@ This folder holds the marimo notebook sources for the site. The Astro applicatio
 3. Develop with `uv run marimo edit src/<slug>.py`.
 4. Validate: `uv run marimo check src/<slug>.py` and `uv run marimo check src/<slug>.py --select MW`.
 5. Confirm it runs headlessly: `uv run src/<slug>.py`.
-6. Export from the repository root: `pnpm notebooks:export`, then verify at `http://localhost:4321/<slug>` with `pnpm dev`.
+6. Export from the repository root: `pnpm notebooks:export`, then verify at `http://localhost:4321/<slug>` (view-only) and `http://localhost:4321/<slug>/edit` (editable) with `pnpm dev`.
 
 ## Editing existing notebooks
 
@@ -29,6 +29,7 @@ This folder holds the marimo notebook sources for the site. The Astro applicatio
 - Preserve each notebook's reactive graph: no cycles, no mutations shared across cells, UI element values (`.value`) read only in downstream cells.
 - Keep all UI elements visible in both interactive and script modes. In script mode, fall back to sensible default data rather than hiding widgets.
 - After structural edits, re-run both `marimo check` passes before exporting.
+- Dark mode on notebook pages is handled by the export-injected `data-notebook-theme` payload (follows `localStorage "kumo-mode"`, else the OS). Keep notebook output theme-neutral; never bake light-only assumptions into cells.
 
 ## What good looks like
 

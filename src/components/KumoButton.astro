@@ -1,0 +1,34 @@
+---
+interface Props {
+    href: string;
+    variant?: "primary" | "secondary" | "ghost" | "outline";
+    size?: "base" | "sm";
+    rel?: string;
+}
+
+const { href, variant = "primary", size = "base", rel } = Astro.props;
+
+const base =
+    "inline-flex items-center justify-center gap-1.5 rounded-md border border-transparent font-medium whitespace-nowrap no-underline";
+
+const sizes = {
+    base: "px-3.5 py-1.5 text-sm",
+    sm: "px-2.5 py-1 text-[13px]",
+};
+
+const variants = {
+    primary:
+        "bg-kumo-brand text-white hover:bg-kumo-brand-hover visited:text-white",
+    secondary:
+        "border-kumo-hairline bg-kumo-control text-kumo-default shadow-sm hover:bg-kumo-tint visited:text-kumo-default",
+    ghost: "bg-transparent px-2 py-1.5 text-sm text-kumo-link hover:bg-kumo-tint",
+    outline:
+        "px-2 py-1.5 text-sm hover:bg-kumo-tint border-kumo-line!",
+};
+
+const padding = variant === "ghost" ? "" : sizes[size];
+---
+
+<a href={href} rel={rel} class:list={[base, variants[variant], padding]}>
+    <slot />
+</a>

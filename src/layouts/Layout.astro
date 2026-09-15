@@ -1,103 +1,126 @@
 ---
+import "../styles/global.css";
+import Sun from "phosphor-astro/Sun.astro";
+import Moon from "phosphor-astro/Moon.astro";
+
 interface Props {
-	title?: string;
+    title?: string;
+    description?: string;
 }
 
-const { title = 'marimo notebooks' } = Astro.props;
+const {
+    title = "Interactive notebooks",
+    description = "A catalogue of interactive notebooks running entirely in your browser.",
+} = Astro.props;
 ---
+
 <!doctype html>
 <html lang="en-GB">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<meta
-			name="description"
-			content="Interactive marimo notebooks running entirely in the browser."
-		/>
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link
-			href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=PT+Sans:ital,wght@0,400;0,700;1,400&family=Fira+Mono:wght@400;500&display=swap"
-			rel="stylesheet"
-		/>
-		<title>{title}</title>
-	</head>
-	<body>
-		<slot />
-	</body>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" href="/favicon.ico" />
+        <meta name="generator" content={Astro.generator} />
+        <meta name="description" content={description} />
+        <script is:inline>
+            // Set data-mode before paint: stored choice wins, else OS preference.
+            try {
+                const stored = localStorage.getItem("kumo-mode");
+                if (stored === "light" || stored === "dark") {
+                    document.documentElement.dataset.mode = stored;
+                } else if (
+                    window.matchMedia("(prefers-color-scheme: dark)").matches
+                ) {
+                    document.documentElement.dataset.mode = "dark";
+                }
+            } catch {
+                // Private mode or unavailable storage: fall back to OS setting.
+            }
+        </script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&family=Roboto+Mono:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+        <title>{title}</title>
+    </head>
+    <body class="flex min-h-screen flex-col bg-kumo-canvas">
+        <header class="sticky top-0 z-20 border-kumo-line bg-kumo-canvas">
+            <div class="mx-auto flex max-w-5xl items-center gap-3 px-4 h-14">
+                <a
+                    href="/"
+                    aria-label="Tools home"
+                    class="inline-flex items-center gap-2.5 text-kumo-strong no-underline visited:text-kumo-strong"
+                >
+                    <span class="text-xl leading-tight">Tools</span>
+                </a>
+                <div class="flex-1"></div>
+                <button
+                    type="button"
+                    data-mode-toggle
+                    aria-label="Toggle light and dark mode"
+                    class="flex h-8 w-8 flex-none cursor-pointer items-center justify-center rounded-lg border border-kumo-hairline bg-kumo-control text-kumo-default hover:bg-kumo-tint"
+                >
+                    <span data-mode-moon>
+                        <Moon width={18} height={18} />
+                    </span>
+                    <span data-mode-sun class="hidden">
+                        <Sun width={18} height={18} />
+                    </span>
+                </button>
+            </div>
+        </header>
+
+        <div class="flex flex-1 flex-col px-2">
+            <div class="border max-w-5xl mx-auto w-full border-kumo-line bg-kumo-base border-dashed rounded-3xl">
+                <slot />
+            </div>
+        </div>
+
+        <script>
+            // Kumo convention: light/dark via data-mode on <html>.
+            // Sun and Moon icons are server-rendered; only visibility toggles here.
+            const root = document.documentElement;
+            const button = document.querySelector("[data-mode-toggle]");
+            const moon = document.querySelector("[data-mode-moon]");
+            const sun = document.querySelector("[data-mode-sun]");
+
+            const current = () => {
+                if (
+                    root.dataset.mode === "light" ||
+                    root.dataset.mode === "dark"
+                ) {
+                    return root.dataset.mode;
+                }
+                return window.matchMedia("(prefers-color-scheme: dark)").matches
+                    ? "dark"
+                    : "light";
+            };
+
+            const render = () => {
+                const dark = current() === "dark";
+                moon?.classList.toggle("hidden", dark);
+                sun?.classList.toggle("hidden", !dark);
+                button?.setAttribute(
+                    "aria-label",
+                    dark ? "Switch to light mode" : "Switch to dark mode",
+                );
+            };
+
+            button?.addEventListener("click", () => {
+                const next = current() === "dark" ? "light" : "dark";
+                root.dataset.mode = next;
+                try {
+                    localStorage.setItem("kumo-mode", next);
+                } catch {
+                    // Ignore storage failures.
+                }
+                render();
+            });
+
+            render();
+        </script>
+    </body>
 </html>
-
-<style is:global>
-	/*
-	 * Theme tokens mirrored from marimo's light theme
-	 * (exported bundle assets/index-*.css), so the Astro shell and the
-	 * embedded notebooks share one visual language. If marimo updates its
-	 * theme, re-export a notebook and compare against these values.
-	 */
-	:root {
-		--background: #fff;
-		--foreground: #0f172a;
-		--muted: #f1f5f9;
-		--muted-foreground: #64748b;
-		--card: #fff;
-		--card-foreground: #0f172a;
-		--border: #e2e8f0;
-		--input: #a3a3a3;
-		--primary: #0880ea;
-		--primary-foreground: #f8fafc;
-		--secondary: #f1f5f9;
-		--accent: #edf6ff;
-		--accent-foreground: #0b68cb;
-		--link: #0b68cb;
-		--link-visited: #8e4ec6;
-		--radius: 8px;
-		--monospace-font: 'Fira Mono', ui-monospace, monospace;
-		--text-font: 'PT Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-			Roboto, 'Helvetica Neue', Arial, sans-serif;
-		--heading-font: 'Lora', Georgia, serif;
-	}
-
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-
-	body {
-		background-color: var(--background);
-		color: var(--foreground);
-		font-family: var(--text-font);
-		line-height: 1.6;
-		-webkit-font-smoothing: antialiased;
-	}
-
-	h1,
-	h2,
-	h3 {
-		font-family: var(--heading-font);
-		font-weight: 500;
-		line-height: 1.25;
-		color: var(--foreground);
-	}
-
-	a {
-		color: var(--link);
-	}
-
-	a:visited {
-		color: var(--link-visited);
-	}
-
-	code,
-	pre {
-		font-family: var(--monospace-font);
-	}
-
-	::selection {
-		background-color: var(--accent);
-	}
-</style>

@@ -42,7 +42,7 @@ Always create and edit notebooks inside [`src/`](src/). Files created in the `no
 Open an existing notebook:
 
 ```bash
-marimo edit src/image-compression.py
+marimo edit src/{my-notebook}.py
 ```
 
 Start a new one directly in the right place:
@@ -66,18 +66,26 @@ marimo check src/my-notebook.py
 
 ## Publishing a notebook to the site
 
-Export the notebook as a self-contained WebAssembly bundle. From this folder:
+`pnpm notebooks:export` (from the repository root) exports every notebook in both flavours at once. The site has no wrapper pages and no `/notebooks/*` route: each export lands directly as the page it becomes:
 
-```bash
-marimo export html-wasm --mode run --no-show-code -f src/my-notebook.py -o ../public/notebooks/my-notebook/
-```
-
-To export every notebook at once, use the script at the repository root instead:
+- `../public/{my-notebook}/index.html` — view-only (`--mode run`)
+- `../public/{my-notebook}/edit/index.html` — editable (`--mode edit`), sharing `../assets/`
+- `../public/{my-notebook}/assets/` and marimo's static files — runtime files the bundle loads
 
 ```bash
 cd ..
 pnpm notebooks:export
 ```
+
+To show code by default in the view-only bundle:
+
+```bash
+node scripts/export-notebooks.mjs --show-code
+```
+
+The export script runs a single run-mode export per notebook, then derives the editable HTML from it: the two flavours differ solely in their HTML (the WASM mount config embeds `"mode": "read"` versus `"mode": "edit"`), while `assets/` is byte-identical — so exporting twice would only waste time and disk. Never export `--mode edit` separately.
+
+The only deliberate difference from pristine marimo output is dark-mode support: marimo bundles are light-only, so the export injects one pre-paint `<script>` + `<style>` (marked `data-notebook-theme`) right after `<head>`. It reads the site theme stored by the catalogue toggle (`localStorage "kumo-mode"`), falls back to the OS preference, follows both live (cross-tab `storage` events, `matchMedia` changes), and inverts the page (`invert(1) hue-rotate(180deg)`) when dark. Everything else is byte-identical marimo output, full-screen.
 
 To include a WebAssembly compatibility check before each export:
 
@@ -97,13 +105,14 @@ After exporting, start the site and confirm the notebook loads:
 pnpm dev
 ```
 
-Then visit `http://localhost:4321/my-notebook` for the wrapped page, or `http://localhost:4321/notebooks/my-notebook/index.html` for the standalone bundle (most static hosts also serve the shorter `/notebooks/my-notebook/` directory URL in production).
+Then visit `http://localhost:4321/my-notebook` for the view-only page and `http://localhost:4321/my-notebook/edit` for the editable page — the only two notebook pages.
 
 A few points worth keeping in mind:
 
-- Use `--mode run` for published output so visitors get the app without the editor chrome. Reserve `--mode edit` for local experiments.
-- Exported bundles under `public/notebooks/` are generated files and are not committed. `pnpm build` regenerates them automatically.
-- Never export into `src/pages/`. That folder holds Astro routes only; raw bundles belong in `public/notebooks/`, with thin wrapper pages generated from `src/pages/[slug].astro`.
+- The view-only page (`/<slug>`) gives visitors the app without the editor chrome; the editable page (`/<slug>/edit`) lets them edit the notebook code in the browser. Changes stay on their device and are never saved.
+- `--show-code` / `--no-show-code` only applies to the view-only bundle.
+- Staged pages under `public/<slug>/` are generated files and are not committed. `pnpm build` regenerates them automatically.
+- Never add per-notebook routes under `src/pages/`. Notebook pages are the raw marimo bundles in `public/<slug>/`; `src/pages/` holds only the catalogue.
 - Keep each notebook's dependencies declared in its PEP 723 metadata block (`# /// script` … `# ///`) so packages install correctly in the browser. Notebook files must stay within the 2 GB WebAssembly memory limit and avoid packages without a WebAssembly-compatible wheel.
 
 ## Browser notifications

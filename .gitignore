@@ -1,9 +1,19 @@
 # build output
 dist/
 
-# exported marimo WASM bundles (rebuilt via `pnpm notebooks:export`)
-public/notebooks/*
-!public/notebooks/.gitkeep
+# exported marimo notebook pages (rebuilt via `pnpm notebooks:export`): each
+# notebook ships as public/<slug>/index.html + public/<slug>/edit/index.html
+# with runtime assets. Slugs are dynamic, hence the wildcards — do not
+# hand-place files in public/<slug>/ directories.
+public/*/index.html
+public/*/edit/
+public/*/assets/
+public/*/*.png
+public/*/favicon.ico
+public/*/manifest.json
+public/*/site.webmanifest
+public/*/CLAUDE.md
+public/*/.nojekyll
 
 # python / marimo
 notebooks/.venv/

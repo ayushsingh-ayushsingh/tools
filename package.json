@@ -15,9 +15,16 @@
     "prebuild": "node scripts/export-notebooks.mjs"
   },
   "dependencies": {
-    "astro": "^7.3.2"
+    "@cloudflare/kumo": "^2.13.2",
+    "astro": "^7.3.2",
+    "phosphor-astro": "^2.1.0"
   },
   "allowScripts": {
     "esbuild": true
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.5.1",
+    "tailwindcss": "^4.3.3"
   }
 }

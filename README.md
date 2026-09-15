@@ -13,21 +13,28 @@ A catalogue of interactive [marimo](https://marimo.io) notebooks, hosted as a st
 │   ├── README.md         # Notebook workflow: setup, editing, export
 │   └── AGENTS.md         # Contributor guide for agents working on notebooks
 ├── public/
-│   └── notebooks/        # Exported WASM bundles (generated, not committed)
+│   └── <slug>/            # Per-notebook pages (generated, not committed)
+│       ├── index.html      # Raw marimo bundle, view-only (+ theme payload)
+│       ├── assets/         # WASM framework assets
+│       ├── logo.png, favicon.ico, …  # Static files marimo emits
+│       └── edit/
+│           ├── index.html  # Raw marimo bundle, editable (shares ../assets/)
+│           └── logo.png, favicon.ico
 ├── scripts/
-│   └── export-notebooks.mjs  # Exports each notebook to public/notebooks/<slug>/
+│   └── export-notebooks.mjs  # Exports each notebook to public/<slug>/ (+ edit/)
 ├── src/
+│   ├── lib/
+│   │   └── notebooks.ts        # Shared notebook discovery (slugs + titles)
 │   └── pages/
-│       ├── index.astro   # Catalogue listing every notebook
-│       └── [slug].astro  # Wrapper page per notebook (short URL: /<slug>)
+│       └── index.astro   # Catalogue listing every notebook
 └── package.json
 ```
 
 How the pieces fit together:
 
 1. Notebook sources live in `notebooks/src/<slug>.py`.
-2. `pnpm notebooks:export` exports each one to `public/notebooks/<slug>/`.
-3. Astro serves those bundles untouched and generates a wrapper page at `/<slug>` that embeds the notebook in a full-height frame. The catalogue at `/` lists them all.
+2. `pnpm notebooks:export` exports each one in both flavours — view-only and editable — as raw marimo bundles to `public/<slug>/index.html` and `public/<slug>/edit/index.html`.
+3. Those files ARE the notebook pages: `/<slug>` and `/<slug>/edit` serve the marimo HTML directly, full-screen, with no wrapper chrome and no `/notebooks/*` route. The only deliberate difference from pristine marimo output is dark-mode support (a pre-paint script + style follows the site theme, else the OS preference). The catalogue at `/` lists them all.
 
 ## Prerequisites
 
@@ -70,7 +77,13 @@ pnpm notebooks:export
 pnpm dev
 ```
 
-The notebook will be live at `/my-notebook`, with a standalone version at `/notebooks/my-notebook/index.html`. The full workflow, including WebAssembly compatibility notes, is covered in [`notebooks/README.md`](notebooks/README.md).
+Exports contain both flavours by default: view-only (`--mode run --no-show-code`) and editable. To show code by default in the view-only bundle:
+
+```sh
+node scripts/export-notebooks.mjs --show-code
+```
+
+The notebook will be live at `/my-notebook` (view-only) and `/my-notebook/edit` (editable) — the only two notebook pages. The full workflow, including WebAssembly compatibility notes, is covered in [`notebooks/README.md`](notebooks/README.md).
 
 ## Scripts
 
@@ -78,7 +91,7 @@ The notebook will be live at `/my-notebook`, with a standalone version at `/note
 | :----------------------------- | :------------------------------------------------------------------ |
 | `pnpm install`                 | Installs web dependencies                                           |
 | `pnpm dev`                     | Starts the local dev server at `localhost:4321`                     |
-| `pnpm notebooks:export`        | Exports every notebook in `notebooks/src/` to `public/notebooks/`   |
+| `pnpm notebooks:export`        | Exports every notebook in `notebooks/src/` to `public/<slug>/` (view-only + editable, raw marimo HTML + theme payload) |
 | `pnpm notebooks:export:check`  | As above, with a WASM compatibility check first                     |
 | `pnpm build`                   | Exports notebooks, then builds the static site to `./dist/`         |
 | `pnpm preview`                 | Previews the production build locally                               |
